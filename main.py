@@ -78,6 +78,10 @@ class UnitConverterDialog(QDialog):
             self.result_value.setText("Invalid input")
 
 # ===================== Calculator Dialog =====================
+from PyQt6.QtWidgets import (
+    QDialog, QLabel, QLineEdit, QComboBox, QPushButton, QVBoxLayout, QFormLayout
+)
+
 class CalculatorDialog(QDialog):
     def __init__(self):
         super().__init__()
@@ -86,10 +90,11 @@ class CalculatorDialog(QDialog):
         # Input fields
         self.num1_label = QLabel("Number 1:")
         self.num1_input = QLineEdit()
+
         self.num2_label = QLabel("Number 2:")
         self.num2_input = QLineEdit()
 
-        # Operator
+        # Operator selection
         self.operator_label = QLabel("Operator:")
         self.operator_combo = QComboBox()
         self.operator_combo.addItems(["+", "-", "*", "/"])
@@ -98,23 +103,19 @@ class CalculatorDialog(QDialog):
         self.calc_button = QPushButton("Calculate")
         self.calc_button.clicked.connect(self.calculate_result)
 
-        # Result
-        self.result_label = QLabel("Result: ")
+        # Result display
+        self.result_label = QLabel("Result:")
         self.result_value = QLabel("")
 
-        # Layout
-        layout = QVBoxLayout()
-        layout.addWidget(self.num1_label)
-        layout.addWidget(self.num1_input)
-        layout.addWidget(self.num2_label)
-        layout.addWidget(self.num2_input)
-        layout.addWidget(self.operator_label)
-        layout.addWidget(self.operator_combo)
-        layout.addWidget(self.calc_button)
-        layout.addWidget(self.result_label)
-        layout.addWidget(self.result_value)
+        # === Layout using QFormLayout ===
+        form_layout = QFormLayout()
+        form_layout.addRow(self.num1_label, self.num1_input)
+        form_layout.addRow(self.num2_label, self.num2_input)
+        form_layout.addRow(self.operator_label, self.operator_combo)
+        form_layout.addRow(self.calc_button)
+        form_layout.addRow(self.result_label, self.result_value)
 
-        self.setLayout(layout)
+        self.setLayout(form_layout)
 
     def calculate_result(self):
         try:
@@ -128,17 +129,18 @@ class CalculatorDialog(QDialog):
                 result = num1 - num2
             elif operator == "*":
                 result = num1 * num2
-            elif operator == "/" and num2 != 0:
+            elif operator == "/":
+                if num2 == 0:
+                    self.result_value.setText("Cannot divide by zero")
+                    return
                 result = num1 / num2
-            elif operator == "/" and num2 == 0:
-                self.result_value.setText("Cannot divide by zero")
-                return
             else:
                 result = "Invalid operator"
 
             self.result_value.setText(str(result))
         except ValueError:
             self.result_value.setText("Invalid input")
+
 
 # ===================== Main Window =====================
 class MainWindow(QMainWindow):
