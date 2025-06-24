@@ -10,7 +10,8 @@ from PyQt6.QtWidgets import (
     QLineEdit, QComboBox
 )
 from PyQt6.QtGui import QAction
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
+
 
 # ===================== Unit Converter Dialog =====================
 class UnitConverterDialog(QDialog):
@@ -107,6 +108,10 @@ class CalculatorDialog(QDialog):
         self.result_label = QLabel("Result:")
         self.result_value = QLabel("")
 
+        # Save Result button
+        self.save_button = QPushButton("Save Result")
+        self.save_button.clicked.connect(self.save_result)
+
         # === Layout using QFormLayout ===
         form_layout = QFormLayout()
         form_layout.addRow(self.num1_label, self.num1_input)
@@ -114,8 +119,10 @@ class CalculatorDialog(QDialog):
         form_layout.addRow(self.operator_label, self.operator_combo)
         form_layout.addRow(self.calc_button)
         form_layout.addRow(self.result_label, self.result_value)
+        form_layout.addRow(self.save_button)
 
         self.setLayout(form_layout)
+
 
     def calculate_result(self):
         try:
@@ -140,6 +147,21 @@ class CalculatorDialog(QDialog):
             self.result_value.setText(str(result))
         except ValueError:
             self.result_value.setText("Invalid input")
+
+    def save_result(self):
+                result_text = self.result_value.text()
+                if result_text:
+                    try:
+                        with open("calc_results.txt", "a") as file:
+                            num1 = self.num1_input.text()
+                            num2 = self.num2_input.text()
+                            op = self.operator_combo.currentText()
+                            file.write(f"{num1} {op} {num2} = {result_text}\n")
+                        self.result_value.setText(result_text + " (Saved)")
+                    except Exception as e:
+                        self.result_value.setText(f"Error: {e}")
+                else:
+                    self.result_value.setText("Nothing to save.")
 
 
 # ===================== Main Window =====================
