@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtWidgets import QMessageBox
 
 
 # ===================== Unit Converter Dialog =====================
@@ -84,6 +85,7 @@ from PyQt6.QtWidgets import (
 )
 
 class CalculatorDialog(QDialog):
+    calculation_done = pyqtSignal(str)  # signal carrying result texts
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Calculator")
@@ -145,6 +147,8 @@ class CalculatorDialog(QDialog):
                 result = "Invalid operator"
 
             self.result_value.setText(str(result))
+            self.calculation_done.emit(str(result))
+
         except ValueError:
             self.result_value.setText("Invalid input")
 
@@ -220,9 +224,16 @@ class MainWindow(QMainWindow):
         dialog = UnitConverterDialog()
         dialog.exec()
 
+    from PyQt6.QtWidgets import QMessageBox
+
+    def on_calculation_done(self, result_text):
+        QMessageBox.information(self, "Calculation Done", f"Result: {result_text}")
+
     def open_calculator(self):
         dialog = CalculatorDialog()
+        dialog.calculation_done.connect(self.on_calculation_done)
         dialog.exec()
+
 
 # ===================== Entry Point =====================
 if __name__ == "__main__":
