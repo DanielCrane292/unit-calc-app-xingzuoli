@@ -4,15 +4,14 @@
 # GitHub Username: DanielCrane292
 
 import sys
-from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QPushButton, QVBoxLayout,
-    QWidget, QDialog, QLabel, QHBoxLayout, QMenuBar, QMenu,
-    QLineEdit, QComboBox
-)
-from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtWidgets import QMessageBox
-
+from PyQt6.QtGui import QAction
+from PyQt6.QtWidgets import (
+    QApplication, QMainWindow, QWidget, QDialog,
+    QPushButton, QLabel, QLineEdit, QComboBox,
+    QVBoxLayout, QHBoxLayout, QFormLayout,
+    QMenuBar, QMenu, QMessageBox, QListWidget
+)
 
 # ===================== Unit Converter Dialog =====================
 class UnitConverterDialog(QDialog):
@@ -84,8 +83,14 @@ from PyQt6.QtWidgets import (
     QDialog, QLabel, QLineEdit, QComboBox, QPushButton, QVBoxLayout, QFormLayout
 )
 
+from PyQt6.QtWidgets import (
+    QDialog, QLabel, QVBoxLayout, QLineEdit, QComboBox,
+    QPushButton, QFormLayout, QListWidget
+)
+
 class CalculatorDialog(QDialog):
-    calculation_done = pyqtSignal(str)  # signal carrying result texts
+    calculation_done = pyqtSignal(str)
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Calculator")
@@ -102,19 +107,21 @@ class CalculatorDialog(QDialog):
         self.operator_combo = QComboBox()
         self.operator_combo.addItems(["+", "-", "*", "/"])
 
-        # Calculate button
-        self.calc_button = QPushButton("Calculate")
-        self.calc_button.clicked.connect(self.calculate_result)
-
         # Result display
         self.result_label = QLabel("Result:")
         self.result_value = QLabel("")
 
-        # Save Result button
+        # Buttons
+        self.calc_button = QPushButton("Calculate")
+        self.calc_button.clicked.connect(self.calculate_result)
+
         self.save_button = QPushButton("Save Result")
         self.save_button.clicked.connect(self.save_result)
 
-        # === Layout using QFormLayout ===
+        self.history_button = QPushButton("View History")
+        self.history_button.clicked.connect(self.view_history)
+
+        # Layout using QFormLayout
         form_layout = QFormLayout()
         form_layout.addRow(self.num1_label, self.num1_input)
         form_layout.addRow(self.num2_label, self.num2_input)
@@ -122,8 +129,16 @@ class CalculatorDialog(QDialog):
         form_layout.addRow(self.calc_button)
         form_layout.addRow(self.result_label, self.result_value)
         form_layout.addRow(self.save_button)
+        form_layout.addRow(self.history_button)
 
         self.setLayout(form_layout)
+
+    def view_history(self):
+        dialog = HistoryDialog()
+        dialog.exec()
+
+
+
 
 
     def calculate_result(self):
@@ -166,6 +181,40 @@ class CalculatorDialog(QDialog):
                         self.result_value.setText(f"Error: {e}")
                 else:
                     self.result_value.setText("Nothing to save.")
+
+class HistoryDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Calculation History")
+
+        self.list_widget = QListWidget()
+        self.clear_button = QPushButton("Clear History")
+        self.clear_button.clicked.connect(self.clear_history)
+
+        self.load_history()
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.list_widget)
+        layout.addWidget(self.clear_button)
+        self.setLayout(layout)
+
+    def load_history(self):
+        self.list_widget.clear()
+        try:
+            with open("calc_results.txt", "r") as file:
+                lines = file.readlines()
+                self.list_widget.addItems([line.strip() for line in lines])
+        except FileNotFoundError:
+            self.list_widget.addItem("No history found.")
+
+    def clear_history(self):
+        try:
+            open("calc_results.txt", "w").close()
+            self.list_widget.clear()
+            self.list_widget.addItem("History cleared.")
+        except Exception as e:
+            self.list_widget.addItem(f"Error clearing history: {e}")
+
 
 
 # ===================== Main Window =====================
